@@ -1,10 +1,12 @@
-package com.xielei.workflowagent;
+package com.xielei.workflowagent.fc;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.xielei.workflowagent.util.FCThreadLocalUtil;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -158,8 +160,31 @@ public class FCTransformer implements ClassFileTransformer {
                     CLASS_POOL.insertClassPath(new LoaderClassPath(contextClassLoader));
                     CtClass ctClass = CLASS_POOL.get(currentClass);
                     CtMethod ctMethod = ctClass.getDeclaredMethod("execute");
-                    ctMethod.insertBefore("com.xielei.workflowagent.util.FCCustOrderChangeTracer.trace($0.getClass().getName(), $1.getCustOrder(), true);");
-                    ctMethod.insertAfter("com.xielei.workflowagent.util.FCCustOrderChangeTracer.trace($0.getClass().getName(), $1.getCustOrder(), false);", true);
+
+                    ctMethod.insertBefore("{" +
+                            "Long custOrderId = null;" +
+                            "Long orderItemId = null;" +
+                            "if ($1.getCustOrder() != null) {;" +
+                            "    custOrderId = $1.getCustOrder().getCustOrderId();" +
+                            "};" +
+                            "if ($1.getOrderItem() != null) {;" +
+                            "    orderItemId = $1.getOrderItem().getOrderItemId();" +
+                            "};" +
+                            "com.xielei.workflowagent.fc.FCCustOrderChangeTracer.trace($0.getClass().getName(), $1.getCustOrder(), 0, custOrderId, orderItemId);" +
+                            "com.xielei.workflowagent.util.FCThreadLocalUtil.set($0.getClass().getName());" +
+                            "}");
+                    ctMethod.insertAfter("{" +
+                            "Long custOrderId = null;" +
+                            "Long orderItemId = null;" +
+                            "if ($1.getCustOrder() != null) {;" +
+                            "    custOrderId = $1.getCustOrder().getCustOrderId();" +
+                            "};" +
+                            "if ($1.getOrderItem() != null) {;" +
+                            "    orderItemId = $1.getOrderItem().getOrderItemId();" +
+                            "};" +
+                            "com.xielei.workflowagent.fc.FCCustOrderChangeTracer.trace($0.getClass().getName(), $1.getCustOrder(), 1, custOrderId, orderItemId);" +
+                            "com.xielei.workflowagent.util.FCThreadLocalUtil.remove();" +
+                            "}", true);
                     return ctClass.toBytecode();
                 }
                 else if (ORDER_ITEM_CANDIDATE_TRANS_CLASS_LIST.contains(currentClass)) {
@@ -167,8 +192,30 @@ public class FCTransformer implements ClassFileTransformer {
                     CLASS_POOL.insertClassPath(new LoaderClassPath(contextClassLoader));
                     CtClass ctClass = CLASS_POOL.get(currentClass);
                     CtMethod ctMethod = ctClass.getDeclaredMethod("execute");
-                    ctMethod.insertBefore("com.xielei.workflowagent.util.FCCustOrderChangeTracer.trace($0.getClass().getName(), $1.getOrderItem(), true);");
-                    ctMethod.insertAfter("com.xielei.workflowagent.util.FCCustOrderChangeTracer.trace($0.getClass().getName(), $1.getOrderItem(), false);", true);
+                    ctMethod.insertBefore("{" +
+                            "Long custOrderId = null;" +
+                            "Long orderItemId = null;" +
+                            "if ($1.getCustOrder() != null) {;" +
+                            "    custOrderId = $1.getCustOrder().getCustOrderId();" +
+                            "};" +
+                            "if ($1.getOrderItem() != null) {;" +
+                            "    orderItemId = $1.getOrderItem().getOrderItemId();" +
+                            "};" +
+                            "com.xielei.workflowagent.fc.FCCustOrderChangeTracer.trace($0.getClass().getName(), $1.getOrderItem(), 0, custOrderId, orderItemId);" +
+                            "com.xielei.workflowagent.util.FCThreadLocalUtil.set($0.getClass().getName());" +
+                            "}");
+                    ctMethod.insertAfter("{" +
+                            "Long custOrderId = null;" +
+                            "Long orderItemId = null;" +
+                            "if ($1.getCustOrder() != null) {;" +
+                            "    custOrderId = $1.getCustOrder().getCustOrderId();" +
+                            "};" +
+                            "if ($1.getOrderItem() != null) {;" +
+                            "    orderItemId = $1.getOrderItem().getOrderItemId();" +
+                            "};" +
+                            "com.xielei.workflowagent.fc.FCCustOrderChangeTracer.trace($0.getClass().getName(), $1.getOrderItem(), 1, custOrderId, orderItemId);" +
+                            "com.xielei.workflowagent.util.FCThreadLocalUtil.remove();" +
+                            "}", true);
                     return ctClass.toBytecode();
                 }
             }
@@ -177,7 +224,7 @@ public class FCTransformer implements ClassFileTransformer {
             e.printStackTrace();
 
         }
-        return classfileBuffer;
+        return null;
     }
 
 }
