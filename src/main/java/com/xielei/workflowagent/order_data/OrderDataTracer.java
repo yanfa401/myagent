@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.xielei.workflowagent.util.DBUtil;
 import com.xielei.workflowagent.util.FCThreadLocalUtil;
+import com.xielei.workflowagent.util.ThreadPoolUtil;
 
 /**
  * @author xielei
@@ -18,16 +19,6 @@ public final class OrderDataTracer {
 
     private static final AtomicInteger atomicInteger = new AtomicInteger(0);
 
-    static {
-        // 启动agent的时候清表
-        try {
-            DBUtil.DB.execute("delete from trajectory");
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void trace(String methodName, String fieldName, Object value) {
         String currentClassName = FCThreadLocalUtil.get();
         if (currentClassName != null) {
@@ -36,14 +27,40 @@ public final class OrderDataTracer {
                 String className = stackTraceElement.getClassName();
                 if (currentClassName.equals(className)) {
                     int lineNumber = stackTraceElement.getLineNumber();
-                    try {
-                        DBUtil.DB.execute("INSERT INTO trajectory VALUES(?, ?, ?, ?, ?, ?, ?)", "998", fieldName, atomicInteger.getAndIncrement(), className, lineNumber, methodName, value);
-                    }
-                    catch (SQLException e) {
-                        e.printStackTrace();
-                    }
+                    ThreadPoolUtil.apply(new OrderDataTracerTask(fieldName, className, lineNumber, methodName, value));
                     break;
                 }
+            }
+        }
+    }
+
+    private static class OrderDataTracerTask implements Runnable {
+
+        private final String fieldName;
+
+        private final String className;
+
+        private final int lineNumber;
+
+        private final String methodName;
+
+        private final Object value;
+
+        public OrderDataTracerTask(String fieldName, String className, int lineNumber, String methodName, Object value) {
+            this.fieldName = fieldName;
+            this.className = className;
+            this.lineNumber = lineNumber;
+            this.methodName = methodName;
+            this.value = value;
+        }
+
+        @Override
+        public void run() {
+            try {
+                DBUtil.DB.execute("insert into trajectory values(?, ?, ?, ?, ?, ?, ?)", "998", fieldName, atomicInteger.getAndIncrement(), className, lineNumber, methodName, value);
+            }
+            catch (SQLException e) {
+                e.printStackTrace();
             }
         }
     }

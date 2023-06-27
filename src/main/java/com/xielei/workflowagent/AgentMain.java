@@ -4,6 +4,7 @@ import java.lang.instrument.Instrumentation;
 
 import com.xielei.workflowagent.fc.FCTransformer;
 import com.xielei.workflowagent.order_data.OrderDataTransformer;
+import com.xielei.workflowagent.util.DBUtil;
 
 /**
  * @author xielei
@@ -15,6 +16,7 @@ public class AgentMain {
      * @see https://www.jianshu.com/p/c7cd105daabc
      */
     public static void premain(String agentArgs, Instrumentation instrumentation) {
+        DBUtil.init();
         instrumentation.addTransformer(new FCTransformer());
         instrumentation.addTransformer(new OrderDataTransformer());
     }

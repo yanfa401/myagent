@@ -6,8 +6,6 @@ import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.xielei.workflowagent.util.FCThreadLocalUtil;
-
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -144,9 +142,6 @@ public class FCTransformer implements ClassFileTransformer {
         ORDER_ITEM_CANDIDATE_TRANS_CLASS_LIST.add("com.iwhalecloud.zsmart.bss.bm.oc.component.fc.initialize.InitProdCreditLimitOrder".trim());
         ORDER_ITEM_CANDIDATE_TRANS_CLASS_LIST.add("com.iwhalecloud.zsmart.bss.bm.oc.component.fc.initialize.InitCustInfoOrder".trim());
     }
-
-
-
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {

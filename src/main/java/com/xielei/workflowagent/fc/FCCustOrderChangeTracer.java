@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import com.alibaba.fastjson.JSONObject;
 import com.xielei.workflowagent.util.DBUtil;
+import com.xielei.workflowagent.util.ThreadPoolUtil;
 
 /**
  * FC记录CustOrder当前数据
@@ -17,22 +18,38 @@ public final class FCCustOrderChangeTracer {
         // empty
     }
 
-    static {
-        try {
-            DBUtil.DB.execute("delete from fc_compare");
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public static void trace(String fcName, Object custOrder, int flag, Long custOrderId, Long orderItemId) {
+        ThreadPoolUtil.apply(new CustOrderChangeTask(custOrderId, orderItemId, fcName, custOrder, flag));
     }
 
-    public static void trace(String fcName, Object obj, int flag, Long custOrderId, Long orderItemId) {
-        try {
-            // todo 后续考虑使用连接池方式改造
-            DBUtil.DB.execute("INSERT INTO fc_compare VALUES(?, ?, ?, ?, ?)", custOrderId, orderItemId, fcName, JSONObject.toJSONStringWithDateFormat(obj, "yyyy-MM-dd HH:mm:ss"), flag);
+    private static final class CustOrderChangeTask implements Runnable {
+
+        public CustOrderChangeTask(Long custOrderId, Long orderItemId, String fcName, Object custOrder, int flag) {
+            this.custOrderId = custOrderId;
+            this.orderItemId = orderItemId;
+            this.fcName = fcName;
+            this.custOrder = custOrder;
+            this.flag = flag;
         }
-        catch (SQLException e) {
-            e.printStackTrace();
+
+        private final Long custOrderId;
+
+        private final Long orderItemId;
+
+        private final String fcName;
+
+        private final Object custOrder;
+
+        private final int flag;
+
+        @Override
+        public void run() {
+            try {
+                DBUtil.DB.execute("insert into fc_compare values(?, ?, ?, ?, ?)", custOrderId, orderItemId, fcName, JSONObject.toJSONStringWithDateFormat(custOrder, "yyyy-MM-dd HH:mm:ss"), flag);
+            }
+            catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
