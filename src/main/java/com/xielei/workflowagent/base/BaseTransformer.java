@@ -5,6 +5,8 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 
 /**
+ * 获取被增强项目的启动类路径, 获取上下文ClassLoader
+ *
  * @author xielei
  * @date 2023/7/3 13:47
  */

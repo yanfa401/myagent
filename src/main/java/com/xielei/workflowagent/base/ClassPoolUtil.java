@@ -16,6 +16,8 @@ public final class ClassPoolUtil {
 
     private static final ClassPool CLASS_POOL = ClassPool.getDefault();
 
+    private static ClassLoader contextLoader;
+
     /**
      * 获取CtClass
      */
@@ -24,6 +26,11 @@ public final class ClassPoolUtil {
     }
 
     public static void insertClassPath(ClassLoader classLoader) {
+        contextLoader = classLoader;
         CLASS_POOL.insertClassPath(new LoaderClassPath(classLoader));
+    }
+
+    public static ClassLoader getContextLoader() {
+        return contextLoader;
     }
 }
