@@ -15,7 +15,7 @@
               <addClasspath>true</addClasspath>
             </manifest>
             <manifestEntries>
-              <Premain-Class>com.xielei.workflowagent.AgentMain</Premain-Class>
+              <Premain-Class>com.xielei.workflowagent.PreMain</Premain-Class>
               <Can-Redefine-Classes>true</Can-Redefine-Classes>
               <Can-Retransform-Classes>true</Can-Retransform-Classes>
             </manifestEntries>

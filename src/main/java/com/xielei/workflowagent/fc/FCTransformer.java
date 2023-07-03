@@ -6,10 +6,10 @@ import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 
-import javassist.ClassPool;
+import com.xielei.workflowagent.base.ClassPoolUtil;
+
 import javassist.CtClass;
 import javassist.CtMethod;
-import javassist.LoaderClassPath;
 
 /**
  * FC增强的字节码Transformer
@@ -25,11 +25,6 @@ public class FCTransformer implements ClassFileTransformer {
     private static final List<String> CUST_ORDER_CANDIDATE_TRANS_CLASS_LIST = new ArrayList<>();
 
     private static final List<String> ORDER_ITEM_CANDIDATE_TRANS_CLASS_LIST = new ArrayList<>();
-
-    /**
-     * CLASS_POOL
-     */
-    private static final ClassPool CLASS_POOL = ClassPool.getDefault();
 
     static {
         CUST_ORDER_CANDIDATE_TRANS_CLASS_LIST.add("com.iwhalecloud.zsmart.bss.bm.osn.oc.component.fc.notify.CalcExpIPPNotifyDate".trim());
@@ -115,8 +110,6 @@ public class FCTransformer implements ClassFileTransformer {
         CUST_ORDER_CANDIDATE_TRANS_CLASS_LIST.add("com.iwhalecloud.zsmart.bss.bm.oc.component.fc.initialize.intf.FillUpNecessaryOffer".trim());
         CUST_ORDER_CANDIDATE_TRANS_CLASS_LIST.add("com.iwhalecloud.zsmart.bss.bm.oc.component.fc.initialize.intf.FillUpOrderForStandard".trim());
         CUST_ORDER_CANDIDATE_TRANS_CLASS_LIST.add("com.iwhalecloud.zsmart.bss.bm.oc.component.fc.initialize.intf.FillUpOrderForBasic".trim());
-        CUST_ORDER_CANDIDATE_TRANS_CLASS_LIST.add("com.iwhalecloud.zsmart.bss.bm.oc.component.fc.initialize.InitPrincipalSuppleOrder".trim());
-        CUST_ORDER_CANDIDATE_TRANS_CLASS_LIST.add("com.iwhalecloud.zsmart.bss.bm.oc.component.fc.initialize.InitAdditionalOfferOrder".trim());
         CUST_ORDER_CANDIDATE_TRANS_CLASS_LIST.add("com.iwhalecloud.zsmart.bss.bm.oc.component.fc.refresh.DealSpecialGroup".trim());
         CUST_ORDER_CANDIDATE_TRANS_CLASS_LIST.add("com.iwhalecloud.zsmart.bss.bm.oc.component.fc.refresh.RefreshBmCache".trim());
         CUST_ORDER_CANDIDATE_TRANS_CLASS_LIST.add("com.iwhalecloud.zsmart.bss.bm.oc.component.fc.refresh.SendMessageToSpc".trim());
@@ -141,6 +134,8 @@ public class FCTransformer implements ClassFileTransformer {
         ORDER_ITEM_CANDIDATE_TRANS_CLASS_LIST.add("com.iwhalecloud.zsmart.bss.bm.oc.component.fc.initialize.InitOrderItem".trim());
         ORDER_ITEM_CANDIDATE_TRANS_CLASS_LIST.add("com.iwhalecloud.zsmart.bss.bm.oc.component.fc.initialize.InitProdCreditLimitOrder".trim());
         ORDER_ITEM_CANDIDATE_TRANS_CLASS_LIST.add("com.iwhalecloud.zsmart.bss.bm.oc.component.fc.initialize.InitCustInfoOrder".trim());
+        ORDER_ITEM_CANDIDATE_TRANS_CLASS_LIST.add("com.iwhalecloud.zsmart.bss.bm.oc.component.fc.initialize.InitPrincipalSuppleOrder".trim());
+        ORDER_ITEM_CANDIDATE_TRANS_CLASS_LIST.add("com.iwhalecloud.zsmart.bss.bm.oc.component.fc.initialize.InitAdditionalOfferOrder".trim());
     }
 
     @Override
@@ -151,9 +146,7 @@ public class FCTransformer implements ClassFileTransformer {
 
                 // 只针对fc进行加强
                 if (CUST_ORDER_CANDIDATE_TRANS_CLASS_LIST.contains(currentClass)) {
-                    ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-                    CLASS_POOL.insertClassPath(new LoaderClassPath(contextClassLoader));
-                    CtClass ctClass = CLASS_POOL.get(currentClass);
+                    CtClass ctClass = ClassPoolUtil.getClass(currentClass);
                     CtMethod ctMethod = ctClass.getDeclaredMethod("execute");
 
                     ctMethod.insertBefore("{" +
@@ -183,9 +176,7 @@ public class FCTransformer implements ClassFileTransformer {
                     return ctClass.toBytecode();
                 }
                 else if (ORDER_ITEM_CANDIDATE_TRANS_CLASS_LIST.contains(currentClass)) {
-                    ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-                    CLASS_POOL.insertClassPath(new LoaderClassPath(contextClassLoader));
-                    CtClass ctClass = CLASS_POOL.get(currentClass);
+                    CtClass ctClass = ClassPoolUtil.getClass(currentClass);
                     CtMethod ctMethod = ctClass.getDeclaredMethod("execute");
                     ctMethod.insertBefore("{" +
                             "Long custOrderId = null;" +

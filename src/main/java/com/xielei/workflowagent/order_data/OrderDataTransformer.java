@@ -6,11 +6,11 @@ import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 
-import javassist.ClassPool;
+import com.xielei.workflowagent.base.ClassPoolUtil;
+
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
-import javassist.LoaderClassPath;
 
 /**
  * @author xielei
@@ -26,20 +26,13 @@ public class OrderDataTransformer implements ClassFileTransformer {
     }
 
 
-    /**
-     * CLASS_POOL
-     */
-    private static final ClassPool CLASS_POOL = ClassPool.getDefault();
-
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
         try {
             if (className != null) {
                 String currentClass = className.replaceAll("/", ".");
                 if (CANDIDATE_TRANS_CLASS_LIST.contains(currentClass)) {
-                    ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-                    CLASS_POOL.insertClassPath(new LoaderClassPath(contextClassLoader));
-                    CtClass ctClass = CLASS_POOL.get(currentClass);
+                    CtClass ctClass = ClassPoolUtil.getClass(currentClass);
                     CtField[] fields = ctClass.getDeclaredFields();
                     for (CtField field : fields) {
                         String fieldName = field.getName();

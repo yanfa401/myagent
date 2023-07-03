@@ -18,17 +18,17 @@ public final class FCCustOrderChangeTracer {
         // empty
     }
 
-    public static void trace(String fcName, Object custOrder, int flag, Long custOrderId, Long orderItemId) {
-        ThreadPoolUtil.apply(new CustOrderChangeTask(custOrderId, orderItemId, fcName, custOrder, flag));
+    public static void trace(String fcName, Object orderData, int flag, Long custOrderId, Long orderItemId) {
+        ThreadPoolUtil.apply(new CustOrderChangeTask(custOrderId, orderItemId, fcName, JSONObject.toJSONStringWithDateFormat(orderData, "yyyy-MM-dd HH:mm:ss"), flag));
     }
 
     private static final class CustOrderChangeTask implements Runnable {
 
-        public CustOrderChangeTask(Long custOrderId, Long orderItemId, String fcName, Object custOrder, int flag) {
+        public CustOrderChangeTask(Long custOrderId, Long orderItemId, String fcName, String orderData, int flag) {
             this.custOrderId = custOrderId;
             this.orderItemId = orderItemId;
             this.fcName = fcName;
-            this.custOrder = custOrder;
+            this.orderData = orderData;
             this.flag = flag;
         }
 
@@ -38,14 +38,14 @@ public final class FCCustOrderChangeTracer {
 
         private final String fcName;
 
-        private final Object custOrder;
+        private final String orderData;
 
         private final int flag;
 
         @Override
         public void run() {
             try {
-                DBUtil.DB.execute("insert into fc_compare values(?, ?, ?, ?, ?)", custOrderId, orderItemId, fcName, JSONObject.toJSONStringWithDateFormat(custOrder, "yyyy-MM-dd HH:mm:ss"), flag);
+                DBUtil.DB.execute("insert into fc_compare values(?, ?, ?, ?, ?)", custOrderId, orderItemId, fcName, orderData, flag);
             }
             catch (SQLException e) {
                 e.printStackTrace();
