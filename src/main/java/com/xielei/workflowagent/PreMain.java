@@ -3,9 +3,7 @@ package com.xielei.workflowagent;
 import java.lang.instrument.Instrumentation;
 
 import com.xielei.workflowagent.base.BaseTransformer;
-import com.xielei.workflowagent.fc.FCTransformer;
-import com.xielei.workflowagent.order_data.OrderDataTransformer;
-import com.xielei.workflowagent.redefine.DynamicRedefineClass;
+import com.xielei.workflowagent.temp.PartIdTransformer;
 import com.xielei.workflowagent.util.DBUtil;
 
 /**
@@ -24,13 +22,17 @@ public class PreMain {
         // 加载基础Transformer, 包含获取被增强项目的启动类路径, 获取上下文ClassLoader
         instrumentation.addTransformer(new BaseTransformer());
 
-        // 增强FC, 获取修改前后订单json数据比对
+
+        // 增强部分DO类, 拥有默认值 partId = 0
+        instrumentation.addTransformer(new PartIdTransformer());
+
+        /*// 增强FC, 获取修改前后订单json数据比对
         instrumentation.addTransformer(new FCTransformer());
 
         // 增强Order数据, 记录各个数据的轨迹
         instrumentation.addTransformer(new OrderDataTransformer());
 
         // 动态重定义class的类
-        DynamicRedefineClass dynamicRedefineClass = new DynamicRedefineClass(instrumentation);
+        DynamicRedefineClass dynamicRedefineClass = new DynamicRedefineClass(instrumentation);*/
     }
 }

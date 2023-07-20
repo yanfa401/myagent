@@ -2,7 +2,6 @@ package com.xielei.workflowagent;
 
 import java.lang.instrument.Instrumentation;
 
-import com.sun.tools.attach.VirtualMachine;
 
 /**
  * 以 loadAgent 方法动态 attach 到目标 JVM 上，这种情况下，会执行 agentmain方法。
